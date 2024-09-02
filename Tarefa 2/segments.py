@@ -23,7 +23,7 @@ def interpolate_points(edges, gradient_magnitude):
     # Find contours to determine points of interest
     contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
-    # Create an empty interpolation map
+    # Creating empty map of same size to make interpolation on top of
     interpolated = np.zeros_like(gradient_magnitude)
     
     # Iterate over contours to fill the interpolation map
@@ -34,32 +34,34 @@ def interpolate_points(edges, gradient_magnitude):
     
     # Apply interpolation (can use smoothing techniques like GaussianBlur to approximate interpolation)
     interpolated = cv2.GaussianBlur(interpolated, (11, 11), 0)
+    interpolated = cv2.normalize(interpolated, None, 0, 255, cv2.NORM_MINMAX)
+    equalized = cv2.equalizeHist(interpolated.astype(np.uint8))
     
-    return interpolated
+    return equalized
 
-def fill_interpolation(interpolated_image, original_image):
-    # Fill the image based on interpolated points, making sure the border has higher values to avoid confusion
-    filled_image = interpolated_image.copy()
-    filled_image[filled_image == 0] = original_image[filled_image == 0]
+# def fill_interpolation(interpolated_image, original_image):
+#     # Fill the image based on interpolated points, making sure the border has higher values to avoid confusion
+#     filled_image = interpolated_image.copy()
+#     filled_image[filled_image == 0] = original_image[filled_image == 0]
     
-    return filled_image
+#     return filled_image
 
-def validate_segmentation(segmented_image, gradient_magnitude):
-    # Label connected components in segmented image
-    num_labels, labels_im = cv2.connectedComponents(segmented_image)
+# def validate_segmentation(segmented_image, gradient_magnitude):
+#     # Label connected components in segmented image
+#     num_labels, labels_im = cv2.connectedComponents(segmented_image)
     
-    validated_image = np.zeros_like(segmented_image)
+#     validated_image = np.zeros_like(segmented_image)
     
-    # Iterate over each labeled component
-    for label in range(1, num_labels):  # Skip background label
-        mask = np.uint8(labels_im == label)
-        edge_strength = cv2.mean(gradient_magnitude, mask=mask)[0]
+#     # Iterate over each labeled component
+#     for label in range(1, num_labels):  # Skip background label
+#         mask = np.uint8(labels_im == label)
+#         edge_strength = cv2.mean(gradient_magnitude, mask=mask)[0]
         
-        # Validate: only keep components with strong enough edge strength
-        if edge_strength > 50:  # Threshold can be adjusted based on the image
-            validated_image[mask > 0] = 255
+#         # Validate: only keep components with strong enough edge strength
+#         if edge_strength > 50:  # Threshold can be adjusted based on the image
+#             validated_image[mask > 0] = 255
     
-    return validated_image
+#     return validated_image
 
 # Loading Image
 ap = argparse.ArgumentParser()
@@ -85,18 +87,18 @@ edges = apply_threshold(grad_mag)
 cv2.imshow("Thresholding", edges)
 
 # Interpolating image using the correct gradient magnitude
-interpolated = interpolate_points(edges, grad_mag)
+interpolated = interpolate_points(edges, image)
 cv2.imshow("Interpolated", interpolated)
 
 # Filling the interpolation with original image data
-filled_image = fill_interpolation(interpolated, original)
-cv2.imshow("Filled Interpolation", filled_image)
+# filled_image = fill_interpolation(interpolated, original)
+# cv2.imshow("Filled Interpolation", filled_image)
 
 # Segmenting the image
-_, segmented = cv2.threshold(filled_image, 127, 255, cv2.THRESH_BINARY)
-cv2.imshow("Segmented", segmented)
+# _, segmented = cv2.threshold(interpolated, 127, 255, cv2.THRESH_BINARY)
+# cv2.imshow("Segmented", segmented)
 
 # Validating the segmentation using gradient magnitude
-validated = validate_segmentation(segmented, grad_mag)
-cv2.imshow("Validated", validated)
+# validated = validate_segmentation(segmented, grad_mag)
+# cv2.imshow("Validated", validated)
 cv2.waitKey(0)
