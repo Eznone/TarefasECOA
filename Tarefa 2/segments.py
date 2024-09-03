@@ -7,17 +7,55 @@ def gradient_magnitude(image):
     grad_y = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=3)
     gradient_magnitude = np.sqrt(grad_x**2 + grad_y**2)
     gradient_magnitude = cv2.convertScaleAbs(gradient_magnitude)
-    return gradient_magnitude
+    gradient_direction = np.arctan2(grad_y, grad_x)
+    return (gradient_magnitude, gradient_direction)
 
+
+def non_maximum_suppression(gradient_magnitude, gradient_direction):
+    # Get the dimensions of the gradient magnitude image
+    rows, cols = gradient_magnitude.shape
+    
+    # Create an empty array to store the suppressed image
+    suppressed = np.zeros((rows, cols), dtype=np.uint8)
+    
+    # Convert gradient directions from radians to degrees
+    angle = np.rad2deg(gradient_direction) % 180  # Limit the angle to [0, 180)
+
+    for i in range(1, rows-1):
+        for j in range(1, cols-1):
+            q = 255
+            r = 255
+            
+            # Determine the neighboring pixels to compare against
+            # Angle 0 degrees (horizontal)
+            if (0 <= angle[i,j] < 22.5) or (157.5 <= angle[i,j] <= 180):
+                q = gradient_magnitude[i, j+1]
+                r = gradient_magnitude[i, j-1]
+            # Angle 45 degrees (diagonal)
+            elif 22.5 <= angle[i,j] < 67.5:
+                q = gradient_magnitude[i+1, j-1]
+                r = gradient_magnitude[i-1, j+1]
+            # Angle 90 degrees (vertical)
+            elif 67.5 <= angle[i,j] < 112.5:
+                q = gradient_magnitude[i+1, j]
+                r = gradient_magnitude[i-1, j]
+            # Angle 135 degrees (diagonal)
+            elif 112.5 <= angle[i,j] < 157.5:
+                q = gradient_magnitude[i-1, j-1]
+                r = gradient_magnitude[i+1, j+1]
+
+            # Suppress non-maximum pixels
+            if gradient_magnitude[i,j] >= q and gradient_magnitude[i,j] >= r:
+                suppressed[i,j] = gradient_magnitude[i,j]
+            else:
+                suppressed[i,j] = 0
+
+    return suppressed
 
 def apply_threshold(image):
-    # Apply binary thresholding
-    _, thresh = cv2.threshold(image, 80, 255, cv2.THRESH_BINARY)
-    
-    # Use thinning operation, approximated with edge detection (Canny or other methods)
-    edges = cv2.Canny(thresh, 80, 150)
-    
-    return edges
+    _, thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    # Here i use Canny instead of snakelets (Snaklets does better job but is far more costly)
+    return thresh
 
 def interpolate_points(edges, gradient_magnitude):
     # Find contours to determine points of interest
@@ -63,6 +101,12 @@ def interpolate_points(edges, gradient_magnitude):
     
 #     return validated_image
 
+
+
+
+
+# Main code ---------------------------------------------------------------------
+
 # Loading Image
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True, help = "Path to the image")
@@ -76,19 +120,27 @@ cv2.imshow("Original Image", image)
 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 original = image.copy()
 image = cv2.GaussianBlur(image, (11, 11), 0)
+
 cv2.imshow("Blurred Image", image)
 
 # Finding Gradient Magnitude
-grad_mag = gradient_magnitude(image)
+(grad_mag, grad_dir) = gradient_magnitude(image)
 cv2.imshow("Gradient Magnitude", grad_mag)
 
+# Suppresing the Gradient
+suppresed = non_maximum_suppression(grad_mag, grad_dir)
+cv2.imshow("Suppresed Gradient", suppresed)
+
 # Applying Thresholding onto the Gradient Magnitude
-edges = apply_threshold(grad_mag)
+edges = apply_threshold(suppresed)
 cv2.imshow("Thresholding", edges)
 
 # Interpolating image using the correct gradient magnitude
-interpolated = interpolate_points(edges, image)
-cv2.imshow("Interpolated", interpolated)
+
+interpolated2 = interpolate_points(edges, grad_mag)
+
+cv2.imshow("Interpolated2", interpolated2)
+
 
 # Filling the interpolation with original image data
 # filled_image = fill_interpolation(interpolated, original)
