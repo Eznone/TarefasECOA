@@ -54,7 +54,6 @@ def non_maximum_suppression(gradient_magnitude, gradient_direction):
 
 def apply_threshold(image):
     _, thresh = cv2.threshold(image, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-    # Here i use Canny instead of snakelets (Snaklets does better job but is far more costly)
     return thresh
 
 def interpolate_points(edges, gradient_magnitude):
