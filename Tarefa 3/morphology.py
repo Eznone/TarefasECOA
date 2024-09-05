@@ -69,15 +69,18 @@ height, width = image.shape
 # Erosion method
 erosion = cv2.erode(image, kernel, iterations = 1)
 images.append(erosion)
-cv2.imshow("Erosion", erosion)
 
 # Dilation
 dilation = cv2.dilate(image, kernel, iterations = 1)
 images.append(dilation)
 
+# Opening
+opening = cv2.morphologyEx(image, cv2.MORPH_OPEN, kernel)
+images.append(dilation)
 
-
-
+# Closing
+closing = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
+images.append(closing)
 
 # Concatinating images
 fullImage = auto_image_grid(images)
