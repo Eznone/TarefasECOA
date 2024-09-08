@@ -6,3 +6,4 @@ matplotlib
 mahotas
 scikit-learn
 scikit-image
+skimage

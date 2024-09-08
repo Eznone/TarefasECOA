@@ -22,7 +22,8 @@ def auto_image_grid(images, grid_size=None):
     
     # Get the dimensions of the first image (assuming all images are the same size)
     image_height, image_width = images[0].shape[:2]
-    
+    new_height, new_width = image_height // 2, image_width // 2
+
     # Determine the grid size automatically if not provided
     num_images = len(images)
     if grid_size is None:
@@ -32,7 +33,7 @@ def auto_image_grid(images, grid_size=None):
         grid_rows, grid_cols = grid_size
     
     # Resize all images to the size of the first image (if they are not already the same size)
-    resized_images = [cv2.resize(img, (image_width, image_height)) for img in images]
+    resized_images = [cv2.resize(img, (image_width // 2, image_height // 2)) for img in images]
     
     # Add blank images to fill the grid if the number of images is not enough to fill it
     while len(resized_images) < grid_rows * grid_cols:
@@ -143,26 +144,27 @@ def canny_image(grayed):
 
     # Returns: A canny processed image
 
-    images.append(grayed)
+    kernel = np.ones((5,5), np.uint8)
+    #images.append(grayed)
     # Making image Greyed
     blurred = cv2.GaussianBlur(grayed, (11, 11), 0)
-    images.append(blurred)
+    #images.append(blurred)
 
     # Making gradient image
     magnitude, direction = gradient_magnitude(blurred)
 
     # Suppreseding gradient image
     non_max_suppressed = non_max_suppression(magnitude, direction)
-    images.append(non_max_suppressed)
+    #images.append(non_max_suppressed)
     
     # Thresholding the suppresed image
     double_thresholded = apply_threshold(non_max_suppressed)
-    images.append(double_thresholded)
+    #images.append(double_thresholded)
 
     # Making better edges through hysteresis tracking
-    tracked = hysteresis_tracking(double_thresholded)
-    images.append(tracked)
-    return tracked
+    opening = cv2.dilate(double_thresholded, kernel, iterations = 1)
+    #images.append(tracked)
+    return opening
 
 
 # Main code ----------------------------------------------------------------
@@ -173,19 +175,33 @@ args = vars(ap.parse_args())
 
 image = cv2.imread(args["image"])
 grayed = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-edged = canny_image(grayed)
+blurred = cv2.GaussianBlur(grayed, (11, 11), 0)
+edged = canny_image(blurred)
+#edged = cv2.Canny(blurred, 30, 100)
 images.append(edged)
 
 boxImage = grayed.copy()
+hull_image = np.zeros_like(grayed)
 
-(cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+(cnts, _) = cv2.findContours(edged.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
 for (i, c) in enumerate(cnts):
     area = cv2.contourArea(c)
-    if area > 100:
-        (x, y , w, h) = cv2.boundingRect(c)
+    
+    # Filter by area
+    if area < 15000 and area > 700:
+        # Draw bounding rectangle around the contour
+        (x, y, w, h) = cv2.boundingRect(c)
         cv2.rectangle(boxImage, (x, y), (x + w, y + h), (0, 0, 255), 2)
-        cv2.drawContours(boxImage, c, -1, (255, 0, 0), 2)
+        
+        # Draw the contour itself in blue
+        cv2.drawContours(boxImage, [c], -1, (255, 0, 0), 2)
+        
+        # Compute the convex hull for the contour
+        hull = cv2.convexHull(c)
+        
+        # Draw the convex hull in green
+        cv2.drawContours(boxImage, [hull], -1, (0, 255, 0), 2)
 
 images.append(boxImage)
 
