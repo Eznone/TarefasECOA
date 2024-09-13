@@ -145,21 +145,21 @@ def canny_image(grayed):
     # Returns: A canny processed image
 
     kernel = np.ones((5,5), np.uint8)
-    #images.append(grayed)
+    images.append(grayed)
     # Making image Greyed
     blurred = cv2.GaussianBlur(grayed, (11, 11), 0)
-    #images.append(blurred)
+    images.append(blurred)
 
     # Making gradient image
     magnitude, direction = gradient_magnitude(blurred)
 
     # Suppreseding gradient image
     non_max_suppressed = non_max_suppression(magnitude, direction)
-    #images.append(non_max_suppressed)
+    images.append(non_max_suppressed)
     
     # Thresholding the suppresed image
     double_thresholded = apply_threshold(non_max_suppressed)
-    #images.append(double_thresholded)
+    images.append(double_thresholded)
 
     # Making better edges through hysteresis tracking
     opening = cv2.dilate(double_thresholded, kernel, iterations = 1)
@@ -175,9 +175,10 @@ args = vars(ap.parse_args())
 
 image = cv2.imread(args["image"])
 grayed = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+images.append(grayed)
 blurred = cv2.GaussianBlur(grayed, (11, 11), 0)
 edged = canny_image(blurred)
-#edged = cv2.Canny(blurred, 30, 100)
+# edged = cv2.Canny(blurred, 30, 100)
 images.append(edged)
 
 boxImage = grayed.copy()
@@ -197,8 +198,10 @@ for (i, c) in enumerate(cnts):
         # Draw the contour itself in blue
         cv2.drawContours(boxImage, [c], -1, (255, 0, 0), 2)
         
+        # Try to join contours or mask
+
         # Compute the convex hull for the contour
-        hull = cv2.convexHull(c)
+        hull = cv2.convexHull(c, False)
         
         # Draw the convex hull in green
         cv2.drawContours(boxImage, [hull], -1, (0, 255, 0), 2)
