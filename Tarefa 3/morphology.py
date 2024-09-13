@@ -170,13 +170,9 @@ def convexHull(image, original, imageList):
     # Function uses convexHull contours to draw minimum points around object
 
     edge = canny_image(image)
-    
+
     # Find contours in the image
     contours, _ = cv2.findContours(edge, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Create a blank image to draw the convex hull
-    hull_image = np.zeros_like(image)
-    # cv2.imshow("Hull before", hull_image)
 
     # Iterate through each contour
     for contour in contours:
