@@ -163,28 +163,35 @@ def canny_image(grayed):
     # Making better edges through hysteresis tracking
     opening = cv2.dilate(double_thresholded, kernel, iterations = 1)
     #images.append(tracked)
-    return opening
+    return (opening, double_thresholded)
 
-def convexHull(image, original, imageList):
+def convexHull(image):
 
     # Function uses convexHull contours to draw minimum points around object
 
-    edge = canny_image(image)
+    edge, threshed = canny_image(image)
 
     # Find contours in the image
     contours, _ = cv2.findContours(edge, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    # Copying threshed image
+    thresh_copy = threshed.copy()
+
     # Iterate through each contour
     for contour in contours:
-        # Find the convex hull of the contour
-        hull = cv2.convexHull(contour)
-        
-        # Draw the convex hull on the image
-        cv2.drawContours(original, [hull], -1, (255, 0, 0), 2)
+        # Filtering countours too small
+        area = cv2.contourArea(contour)
+
+        if area > 1000:
+            # Find the convex hull of the contour
+            hull = cv2.convexHull(contour)
+            
+            # Draw the convex hull on the image
+            cv2.drawContours(thresh_copy, [hull], -1, (255, 0, 0), 2)
     
     # cv2.imshow("Hull after", hull_image)
 
-    return original
+    return thresh_copy
 
 
 # Main code ---------------------------------------------------------------------
@@ -217,7 +224,7 @@ closing = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
 images.append(closing)
 
 # Convex Hull
-hull_image = convexHull(image, image,  images)
+hull_image = convexHull(image)
 images.append(hull_image)
 
 # Concatinating images
