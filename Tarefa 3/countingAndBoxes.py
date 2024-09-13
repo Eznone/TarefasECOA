@@ -197,6 +197,8 @@ for (i, c) in enumerate(cnts):
         # Draw the contour itself in blue
         cv2.drawContours(boxImage, [c], -1, (255, 0, 0), 2)
         
+        # Try to join contours or mask
+
         # Compute the convex hull for the contour
         hull = cv2.convexHull(c)
         

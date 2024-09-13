@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 import math
 
+# Functions ---------------------------------------------------------------------
 def auto_image_grid(images, grid_size=None):
     """
     Arranges images in a grid layout based on the number of images.
@@ -49,6 +50,33 @@ def auto_image_grid(images, grid_size=None):
     
     return grid_image
 
+def convexHull(image):
+
+    # Function uses convexHull contours to draw minimum points around object
+
+    edge = cv2.Canny(image, 127, 255, cv2.THRESH_BINARY)
+
+    cv2.imshow("thresh", edge)
+
+    # Find contours in the image
+    contours, _ = cv2.findContours(edge, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Create a blank image to draw the convex hull
+    hull_image = np.zeros_like(image)
+    cv2.imshow("Hull before", hull_image)
+
+    # Iterate through each contour
+    for contour in contours:
+        # Find the convex hull of the contour
+        hull = cv2.convexHull(contour)
+        
+        # Draw the convex hull on the image
+        cv2.drawContours(hull_image, [hull], -1, (255, 0, 0), 2)
+    
+    cv2.imshow("Hull after", hull_image)
+
+    return hull_image
+
 
 # Main code ---------------------------------------------------------------------
 
@@ -62,9 +90,6 @@ image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 images = []
 # Making kernel
 kernel = np.ones((5,5),np.uint8)
-
-# Get the image dimensions
-height, width = image.shape
 
 # Erosion method
 erosion = cv2.erode(image, kernel, iterations = 1)
@@ -81,6 +106,10 @@ images.append(dilation)
 # Closing
 closing = cv2.morphologyEx(image, cv2.MORPH_CLOSE, kernel)
 images.append(closing)
+
+# Convex Hull
+hull_image = convexHull(image)
+images.append(hull_image)
 
 # Concatinating images
 fullImage = auto_image_grid(images)
