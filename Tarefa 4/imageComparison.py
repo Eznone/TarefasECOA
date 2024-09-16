@@ -7,7 +7,6 @@ import math
 images = []
 kernel = np.ones((5,5),np.uint8)
 coinComp = cv2.imread("../images/coinComp2.png")
-# images.append(coinComp)
 
 # Functions -----------------------------------------------------------------
 def getImage():
@@ -67,7 +66,7 @@ def auto_image_grid(images, grid_size=None):
 def processImage(image):
     newImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     newImage = cv2.GaussianBlur(newImage, (11, 11), 0)
-    newImage = cv2.dilate(newImage, kernel, iterations = 8)
+    newImage = cv2.dilate(newImage, kernel, iterations = 3)
     return newImage
 
 def imageComparitor(image, template, meth):
@@ -91,7 +90,7 @@ def imageComparitor(image, template, meth):
     # cv2.rectangle(paste, top_left, bottom_right, (0, 0, 0), 2)
 
     # Display the results
-    return(top_left, bottom_right)
+    return(top_left, bottom_right, res)
 
 # Main ----------------------------------------------------------------------
 
@@ -103,12 +102,13 @@ originalImage = getImage()
 processedCoin = processImage(coinComp)
 processedImage = processImage(originalImage)
 images.append(processedImage)
+images.append(processedCoin)
 
 # Comparing images
 methods = ['TM_CCOEFF', 'TM_CCOEFF_NORMED', 'TM_CCORR', 'TM_CCORR_NORMED', 'TM_SQDIFF', 'TM_SQDIFF_NORMED']
 for method in methods:
     tempImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
-    (top_left, bottom_right) = imageComparitor(processedImage, processedCoin, method)
+    (top_left, bottom_right, result) = imageComparitor(processedImage, processedCoin, method)
     cv2.rectangle(tempImage, top_left, bottom_right, (0, 0, 0), 2)
     images.append(tempImage)
 
