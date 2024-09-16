@@ -6,6 +6,8 @@ import math
 # Global variables
 images = []
 kernel = np.ones((5,5),np.uint8)
+coinComp = cv2.imread("../images/coinComp2.png")
+# images.append(coinComp)
 
 # Functions -----------------------------------------------------------------
 def getImage():
@@ -68,15 +70,47 @@ def processImage(image):
     newImage = cv2.dilate(newImage, kernel, iterations = 8)
     return newImage
 
+def imageComparitor(image, template, meth):
+    w, h  = template.shape[::-1]
+    
+    paste = image.copy()
+    temp = image.copy()
+    method = getattr(cv2, meth)
+
+    # Using template match
+    res = cv2.matchTemplate(temp, template, method)
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+    # If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
+    if meth in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
+        top_left = min_loc
+    else:
+        top_left = max_loc
+
+    bottom_right = (top_left[0] + w, top_left[1] + h)
+    # cv2.rectangle(paste, top_left, bottom_right, (0, 0, 0), 2)
+
+    # Display the results
+    return(top_left, bottom_right)
 
 # Main ----------------------------------------------------------------------
 
 # Getting image through command line in console
 originalImage = getImage()
+#images.append(originalImage)
 
 # Processing image obtained
+processedCoin = processImage(coinComp)
 processedImage = processImage(originalImage)
 images.append(processedImage)
+
+# Comparing images
+methods = ['TM_CCOEFF', 'TM_CCOEFF_NORMED', 'TM_CCORR', 'TM_CCORR_NORMED', 'TM_SQDIFF', 'TM_SQDIFF_NORMED']
+for method in methods:
+    tempImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
+    (top_left, bottom_right) = imageComparitor(processedImage, processedCoin, method)
+    cv2.rectangle(tempImage, top_left, bottom_right, (0, 0, 0), 2)
+    images.append(tempImage)
 
 # Making grid layout
 presentationImage = auto_image_grid(images)
