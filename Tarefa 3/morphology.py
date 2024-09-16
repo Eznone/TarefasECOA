@@ -151,6 +151,7 @@ def canny_image(grayed):
 
     # Making gradient image
     magnitude, direction = gradient_magnitude(blurred)
+    images.append(magnitude)
 
     # Suppreseding gradient image
     non_max_suppressed = non_max_suppression(magnitude, direction)
@@ -162,6 +163,7 @@ def canny_image(grayed):
 
     # Making better edges through hysteresis tracking
     opening = cv2.dilate(double_thresholded, kernel, iterations = 1)
+    images.append(opening)
     #images.append(tracked)
     return (opening, double_thresholded)
 
