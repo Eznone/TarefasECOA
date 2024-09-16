@@ -113,9 +113,10 @@ def non_max_suppression(gradient_magnitude, gradient_direction):
 
 def processImage(image):
     newImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    newImage = cv2.GaussianBlur(newImage, (11, 11), 0)
-    _, newImage = cv2.threshold(newImage, 155, 255, cv2.THRESH_BINARY)
-    newImage = cv2.dilate(newImage, kernel, iterations = 1)
+    newImage = cv2.GaussianBlur(newImage, (5, 5), 0)
+    #_, newImage = cv2.threshold(newImage, 155, 255, cv2.THRESH_BINARY)
+    #newImage = cv2.dilate(newImage, kernel, iterations = 1)
+
     return newImage
 
 def imageComparitor(image, template, meth):
@@ -159,12 +160,12 @@ methods = ['TM_CCOEFF', 'TM_CCOEFF_NORMED', 'TM_CCORR', 'TM_CCORR_NORMED', 'TM_S
 for method in methods:
     tempImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
     (w, h, top_left, bottom_right, result) = imageComparitor(processedImage, processedCoin, method)
-    threshold = 0.8
+    threshold = 0.98
     loc = np.where(result >= threshold)
-    print(loc)
-    #cv2.rectangle(tempImage, top_left, bottom_right, (0, 0, 0), 2)
-    for pt in zip(*loc[::-1]):
-        cv2.rectangle(tempImage, pt, (pt[0] + w, pt[1] + h), (0,0,0), 2)
+    #print(loc)
+    cv2.rectangle(tempImage, top_left, bottom_right, (0, 0, 0), 2)
+    #for pt in zip(*loc[::-1]):
+        #cv2.rectangle(tempImage, pt, (pt[0] + w, pt[1] + h), (0,0,0), 2)
     images.append(tempImage)
 
 # Making grid layout
