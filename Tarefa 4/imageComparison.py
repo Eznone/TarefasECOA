@@ -6,7 +6,7 @@ import math
 # Global variables ----------------------------------------------------------
 images = []
 kernel = np.ones((5,5),np.uint8)
-coinComp = cv2.imread("../images/coin.png")
+coinComp = cv2.imread("../images/coinComp4.png")
 
 # Functions -----------------------------------------------------------------
 def getImage():
@@ -178,14 +178,15 @@ images.append(processedImage)
 images.append(processedCoin)
 
 # Comparing images
-methods = ['TM_CCOEFF', 'TM_CCOEFF_NORMED', 'TM_CCORR', 'TM_CCORR_NORMED', 'TM_SQDIFF', 'TM_SQDIFF_NORMED']
+#methods = ['TM_CCOEFF', 'TM_CCOEFF_NORMED', 'TM_CCORR', 'TM_CCORR_NORMED', 'TM_SQDIFF', 'TM_SQDIFF_NORMED']
+methods = ['TM_CCOEFF_NORMED', 'TM_CCORR_NORMED']
 for method in methods:
     # Preping temporaray image for boxes to be drawn on
     tempImageRGB = originalImage.copy()
     (w, h, top_left, bottom_right, result) = imageComparitor(processedImage, processedCoin, method)
 
     # Maxing a limit for some of the methods in the methods array
-    threshold = 0.9
+    threshold = 0.88
     loc = np.where(result >= threshold)
     
     # Un comment next line and comment the 2 lines after that to get only one result
