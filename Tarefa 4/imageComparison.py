@@ -3,7 +3,7 @@ import numpy as np
 import argparse
 import math
 
-# Global variables
+# Global variables ----------------------------------------------------------
 images = []
 kernel = np.ones((5,5),np.uint8)
 coinComp = cv2.imread("../images/coin.png")
@@ -21,7 +21,7 @@ def auto_image_grid(images, grid_size=None):
     Arranges images in a grid layout based on the number of images.
     
     Args:
-        images (list): List of images (must be of the same size or will be resized automatically).
+        images (list): List of images (can be a mix of grayscale and RGB).
         grid_size (tuple): (rows, cols) for grid layout. If None, the function calculates a square grid.
     
     Returns:
@@ -34,8 +34,7 @@ def auto_image_grid(images, grid_size=None):
     
     # Get the dimensions of the first image (assuming all images are the same size)
     image_height, image_width = images[0].shape[:2]
-    new_height, new_width = image_height // 2, image_width // 2
-
+    
     # Determine the grid size automatically if not provided
     num_images = len(images)
     if grid_size is None:
@@ -44,18 +43,28 @@ def auto_image_grid(images, grid_size=None):
     else:
         grid_rows, grid_cols = grid_size
     
-    # Resize all images to the size of the first image (if they are not already the same size)
-    resized_images = [cv2.resize(img, (image_width // 2, image_height // 2)) for img in images]
+    # Resize and convert images as necessary
+    processed_images = []
+    for img in images:
+        # Convert grayscale images to RGB for consistent display if necessary
+        if len(img.shape) == 2:  # Grayscale image
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+        elif img.shape[2] == 1:  # Grayscale image with one channel
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
+
+        # Resize the image to the size of the first image
+        resized_img = cv2.resize(img, (image_width, image_height))
+        processed_images.append(resized_img)
     
     # Add blank images to fill the grid if the number of images is not enough to fill it
-    while len(resized_images) < grid_rows * grid_cols:
-        blank_image = np.zeros_like(resized_images[0])  # Create a blank black image
-        resized_images.append(blank_image)
+    while len(processed_images) < grid_rows * grid_cols:
+        blank_image = np.zeros_like(processed_images[0])  # Create a blank black image
+        processed_images.append(blank_image)
     
     # Create the grid row by row
     grid_image = []
     for row in range(grid_rows):
-        row_images = resized_images[row * grid_cols:(row + 1) * grid_cols]
+        row_images = processed_images[row * grid_cols:(row + 1) * grid_cols]
         grid_image.append(cv2.hconcat(row_images))
     
     # Concatenate the rows vertically to get the full grid
@@ -111,11 +120,22 @@ def non_max_suppression(gradient_magnitude, gradient_direction):
                 suppressed[i,j] = 0
     return suppressed
 
-def processImage(image):
-    newImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    #newImage = cv2.GaussianBlur(newImage, (5, 5), 0)
+def adjust_gamma(image, gamma = 1.0):
+	# build a lookup table mapping the pixel values [0, 255] to
+	# their adjusted gamma values
+	invGamma = 1.0 / gamma
+	table = np.array([((i / 255.0) ** invGamma) * 255
+		for i in np.arange(0, 256)]).astype("uint8")
+	# apply gamma correction using the lookup table
+	return cv2.LUT(image, table)
+
+
+def processImage(image, gamma = 1.0):
+    newImage = adjust_gamma(image, gamma)
+    newImage = cv2.cvtColor(newImage, cv2.COLOR_BGR2GRAY)
+    newImage = cv2.GaussianBlur(newImage, (5, 5), 0)
     #_, newImage = cv2.threshold(newImage, 155, 255, cv2.THRESH_BINARY)
-    #newImage = cv2.dilate(newImage, kernel, iterations = 1)
+    newImage = cv2.dilate(newImage, kernel, iterations = 1)
 
     return newImage
 
@@ -152,24 +172,28 @@ originalImage = getImage()
 #images.append(originalImage)
 
 # Processing image obtained
-processedCoin = processImage(coinComp, )
-#processedCoin = cv2.cvtColor(coinComp, cv2.COLOR_BGR2GRAY)
-processedImage = processImage(originalImage)
+processedCoin = processImage(coinComp, 0.25)
+processedImage = processImage(originalImage, 0.5)
 images.append(processedImage)
 images.append(processedCoin)
 
 # Comparing images
 methods = ['TM_CCOEFF', 'TM_CCOEFF_NORMED', 'TM_CCORR', 'TM_CCORR_NORMED', 'TM_SQDIFF', 'TM_SQDIFF_NORMED']
 for method in methods:
-    tempImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
+    # Preping temporaray image for boxes to be drawn on
+    tempImageRGB = originalImage.copy()
     (w, h, top_left, bottom_right, result) = imageComparitor(processedImage, processedCoin, method)
-    threshold = 0.8
+
+    # Maxing a limit for some of the methods in the methods array
+    threshold = 0.9
     loc = np.where(result >= threshold)
-    #print(loc)
+    
+    # Un comment next line and comment the 2 lines after that to get only one result
     #cv2.rectangle(tempImage, top_left, bottom_right, (0, 0, 0), 2)
     for pt in zip(*loc[::-1]):
-        cv2.rectangle(tempImage, pt, (pt[0] + w, pt[1] + h), (255,0,0), 2)
-    images.append(tempImage)
+        cv2.rectangle(tempImageRGB, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+
+    images.append(tempImageRGB)
 
 # Making grid layout
 presentationImage = auto_image_grid(images)
