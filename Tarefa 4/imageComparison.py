@@ -72,54 +72,6 @@ def auto_image_grid(images, grid_size=None):
     
     return grid_image
 
-def gradient_magnitude(image):
-    grad_x = cv2.Sobel(image, cv2.CV_64F, 1, 0, ksize=3)
-    grad_y = cv2.Sobel(image, cv2.CV_64F, 0, 1, ksize=3)
-    gradient_magnitude = np.sqrt(grad_x**2 + grad_y**2)
-    gradient_magnitude = cv2.convertScaleAbs(gradient_magnitude)
-    gradient_direction = np.arctan2(grad_y, grad_x)
-    return (gradient_magnitude, gradient_direction)
-
-def non_max_suppression(gradient_magnitude, gradient_direction):
-    # Get the dimensions of the gradient magnitude image
-    rows, cols = gradient_magnitude.shape
-    
-    # Create an empty array to store the suppressed image
-    suppressed = np.zeros((rows, cols), dtype=np.uint8)
-    
-    # Convert gradient directions from radians to degrees
-    angle = np.rad2deg(gradient_direction) % 180  # Limit the angle to [0, 180)
-
-    for i in range(1, rows-1):
-        for j in range(1, cols-1):
-            q = 255
-            r = 255
-            
-            # Determine the neighboring pixels to compare against
-            # Angle 0 degrees (horizontal)
-            if (0 <= angle[i,j] < 22.5) or (157.5 <= angle[i,j] <= 180):
-                q = gradient_magnitude[i, j+1]
-                r = gradient_magnitude[i, j-1]
-            # Angle 45 degrees (diagonal)
-            elif 22.5 <= angle[i,j] < 67.5:
-                q = gradient_magnitude[i+1, j-1]
-                r = gradient_magnitude[i-1, j+1]
-            # Angle 90 degrees (vertical)
-            elif 67.5 <= angle[i,j] < 112.5:
-                q = gradient_magnitude[i+1, j]
-                r = gradient_magnitude[i-1, j]
-            # Angle 135 degrees (diagonal)
-            elif 112.5 <= angle[i,j] < 157.5:
-                q = gradient_magnitude[i-1, j-1]
-                r = gradient_magnitude[i+1, j+1]
-
-            # Suppress non-maximum pixels
-            if gradient_magnitude[i,j] >= q and gradient_magnitude[i,j] >= r:
-                suppressed[i,j] = gradient_magnitude[i,j]
-            else:
-                suppressed[i,j] = 0
-    return suppressed
-
 def adjust_gamma(image, gamma = 1.0):
 	# build a lookup table mapping the pixel values [0, 255] to
 	# their adjusted gamma values
@@ -131,11 +83,15 @@ def adjust_gamma(image, gamma = 1.0):
 
 
 def processImage(image, gamma = 1.0):
+    images.append(image)
     newImage = adjust_gamma(image, gamma)
+    images.append(newImage)
     newImage = cv2.cvtColor(newImage, cv2.COLOR_BGR2GRAY)
+    images.append(newImage)
     newImage = cv2.GaussianBlur(newImage, (5, 5), 0)
-    #_, newImage = cv2.threshold(newImage, 155, 255, cv2.THRESH_BINARY)
+    images.append(newImage)
     newImage = cv2.dilate(newImage, kernel, iterations = 1)
+    images.append(newImage)
 
     return newImage
 
@@ -169,24 +125,21 @@ def imageComparitor(image, template, meth):
 
 # Getting image through command line in console
 originalImage = getImage()
-#images.append(originalImage)
 
 # Processing image obtained
 processedCoin = processImage(coinComp, 0.25)
 processedImage = processImage(originalImage, 0.5)
-images.append(processedImage)
-images.append(processedCoin)
 
 # Comparing images
-#methods = ['TM_CCOEFF', 'TM_CCOEFF_NORMED', 'TM_CCORR', 'TM_CCORR_NORMED', 'TM_SQDIFF', 'TM_SQDIFF_NORMED']
-methods = ['TM_CCOEFF_NORMED', 'TM_CCORR_NORMED']
+methods = ['TM_CCOEFF', 'TM_CCOEFF_NORMED', 'TM_CCORR', 'TM_CCORR_NORMED', 'TM_SQDIFF', 'TM_SQDIFF_NORMED']
+#methods = ['TM_CCOEFF_NORMED', 'TM_CCORR_NORMED']
 for method in methods:
     # Preping temporaray image for boxes to be drawn on
     tempImageRGB = originalImage.copy()
     (w, h, top_left, bottom_right, result) = imageComparitor(processedImage, processedCoin, method)
 
     # Maxing a limit for some of the methods in the methods array
-    threshold = 0.88
+    threshold = 0.89
     loc = np.where(result >= threshold)
     
     # Un comment next line and comment the 2 lines after that to get only one result
