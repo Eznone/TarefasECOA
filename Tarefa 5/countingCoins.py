@@ -13,21 +13,27 @@ image = getImage()
 
 # Functions -----------------------------------------------------------------
 def template_match(originalImage, coinImage):
-  processedCoin = processImage(coinImage, 0.25)
-  processedImage = processImage(originalImage, 0.5)
-  
-  # Preping temporaray image for boxes to be drawn on
-  tempImageRGB = originalImage.copy()
-  (w, h, top_left, bottom_right, result) = imageComparitor(processedImage, processedCoin, 'TM_CCORR_NORMED')
+    processedCoin = processImage(coinImage, 0.25)
+    processedImage = processImage(originalImage, 0.5)
 
-  # Maxing a limit for some of the methods in the methods array
-  threshold = 0.89
-  loc = np.where(result >= threshold)
-  
-  for pt in zip(*loc[::-1]):
-      cv2.rectangle(tempImageRGB, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+    # Preping temporaray image for boxes to be drawn on
+    tempImageRGB = originalImage.copy()
+    (w, h, top_left, bottom_right, result) = imageComparitor(processedImage, processedCoin, 'TM_CCORR_NORMED')
 
-  images.append(tempImageRGB)
+    # Maxing a limit for some of the methods in the methods array
+    threshold = 0.89
+    loc = np.where(result >= threshold)
+
+    
+    # Counting the number of Objects
+    num_objects_list = list(zip(*loc[::-1]))
+    num_objects = len(num_objects_list)
+
+    for pt in zip(*loc[::-1]):
+        cv2.rectangle(tempImageRGB, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+
+    images.append(tempImageRGB)
+    return num_objects
 
 def hough_circle(originalImage):
   grayImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
@@ -37,6 +43,10 @@ def hough_circle(originalImage):
   circles = cv2.HoughCircles(grayImage, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30, minRadius=40, maxRadius = 80)
   if circles is not None:
       circles = np.uint16(np.around(circles))
+
+      # Counting the circles
+      num_circles = circles.shape[1]
+
       for i in circles[0, :]:
           center = (i[0], i[1])
           # circle center
@@ -45,6 +55,7 @@ def hough_circle(originalImage):
           radius = i[2]
           cv2.circle(originalImage, center, radius, (255, 0, 255), 3)
   images.append(originalImage)
+  return num_circles
 
 def watershed(originalImage):
     gammaImage = adjust_gamma(image, 1.0)
@@ -79,18 +90,32 @@ def watershed(originalImage):
     markers = cv2.watershed(originalImage,markers)
     originalImage[markers == -1] = [255,0,0]
 
+    # Count the number of unique markers excluding the background (label 1)
+    unique_labels = np.unique(markers)
+    num_objects = len(unique_labels) - 2 
+
+
     #cv2.normalize(dist_transform, dist_transform, 0, 1.0, cv2.NORM_MINMAX)
     #cv2.imshow("dist_transform", dist_transform)
     #cv2.waitKey(0)
 
     images.append(originalImage)
+    return num_objects
 
 # Main ----------------------------------------------------------------------
 
-# First method is matching templates as the function suggests
-template_match(image.copy(), coinComp.copy())
-hough_circle(image.copy())
-watershed(image.copy())
+# Template Matching to get # of Circles
+num_template = template_match(image.copy(), coinComp.copy())
+print("Number of Circles in Template Matching:%d" % num_template)
+
+# Hough Circle Detection to get # of Circles
+num_hough = hough_circle(image.copy())
+print("Number of Circles in Hough:%d," % num_hough)
+
+# Watershed Segmentation to get # of Circles
+num_water = watershed(image.copy())
+print("Number of Circles in WaterShed:%d" % num_water)
+
 
 # Making grid layout
 presentationImage = auto_image_grid(images)
