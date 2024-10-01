@@ -6,3 +6,4 @@ mahotas
 scikit-learn
 scikit-image
 opencv-contrib-python
+jupyter
