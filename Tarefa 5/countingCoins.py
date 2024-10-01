@@ -24,13 +24,18 @@ def template_match(originalImage, coinImage):
     threshold = 0.89
     loc = np.where(result >= threshold)
 
-    
-    # Counting the number of Objects
-    num_objects_list = list(zip(*loc[::-1]))
-    num_objects = len(num_objects_list)
-
+    boxes = []
     for pt in zip(*loc[::-1]):
-        cv2.rectangle(tempImageRGB, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+        boxes.append((pt[0], pt[1], pt[0] + w, pt[1] + h))
+
+    filtered_boxes = non_max_suppression_fast(boxes, overlapThresh = 0.3)
+    
+    # Draw filtered boxes on the image
+    for (x1, y1, x2, y2) in filtered_boxes:
+        cv2.rectangle(tempImageRGB, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
+    # Counting the number of unique objects detected
+    num_objects = len(filtered_boxes)
 
     images.append(tempImageRGB)
     return num_objects
