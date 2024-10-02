@@ -82,6 +82,8 @@ def processImage(image, gamma = 1.0):
     newImage = cv2.cvtColor(newImage, cv2.COLOR_BGR2GRAY)
     newImage = cv2.GaussianBlur(newImage, (5, 5), 0)
     newImage = cv2.dilate(newImage, kernel, iterations = 1)
+    cv2.imshow("Processing", newImage)
+    cv2.waitKey(0)
     return newImage
 
 def imageComparitor(image, template, meth):
@@ -97,6 +99,9 @@ def imageComparitor(image, template, meth):
     # Using template match
     res = cv2.matchTemplate(temp, template, method)
     min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+    cv2.imshow("result", res)
+    cv2.waitKey(0)
 
     # If the method is TM_SQDIFF or TM_SQDIFF_NORMED, take minimum
     if meth in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
@@ -116,22 +121,20 @@ def non_max_suppression_fast(boxes, overlapThresh):
 
     boxes = np.array(boxes)
     
-    # Initialize the list of picked indexes
     pick = []
     
-    # Grab the coordinates of the bounding boxes
     x1 = boxes[:, 0]
     y1 = boxes[:, 1]
     x2 = boxes[:, 2]
     y2 = boxes[:, 3]
 
-    # Compute the area of the bounding boxes and sort the bounding boxes by the bottom-right y-coordinate
+
     area = (x2 - x1 + 1) * (y2 - y1 + 1)
     idxs = np.argsort(y2)
 
-    # Keep looping while some indexes still remain in the indexes list
+
     while len(idxs) > 0:
-        # Grab the last index in the indexes list and add the index value to the list of picked indexes
+
         last = len(idxs) - 1
         i = idxs[last]
         pick.append(i)
@@ -142,7 +145,7 @@ def non_max_suppression_fast(boxes, overlapThresh):
         xx2 = np.minimum(x2[i], x2[idxs[:last]])
         yy2 = np.minimum(y2[i], y2[idxs[:last]])
 
-        # Compute the width and height of the bounding box
+        # Bounding box measurements
         w = np.maximum(0, xx2 - xx1 + 1)
         h = np.maximum(0, yy2 - yy1 + 1)
 

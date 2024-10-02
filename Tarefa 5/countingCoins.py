@@ -41,26 +41,26 @@ def template_match(originalImage, coinImage):
     return num_objects
 
 def hough_circle(originalImage):
-  grayImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
-  grayImage = cv2.medianBlur(grayImage, 5)
+    grayImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
+    grayImage = cv2.medianBlur(grayImage, 5)
 
-  rows = grayImage.shape[0]
-  circles = cv2.HoughCircles(grayImage, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30, minRadius=40, maxRadius = 80)
-  if circles is not None:
-      circles = np.uint16(np.around(circles))
+    rows = grayImage.shape[0]
+    circles = cv2.HoughCircles(grayImage, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30, minRadius=40, maxRadius = 80)
+    if circles is not None:
+        circles = np.uint16(np.around(circles))
 
-      # Counting the circles
-      num_circles = circles.shape[1]
+        # Counting the circles
+        num_circles = circles.shape[1]
 
-      for i in circles[0, :]:
-          center = (i[0], i[1])
-          # circle center
-          cv2.circle(originalImage, center, 1, (0, 100, 100), 3)
-          # circle outline
-          radius = i[2]
-          cv2.circle(originalImage, center, radius, (255, 0, 255), 3)
-  images.append(originalImage)
-  return num_circles
+        for i in circles[0, :]:
+            center = (i[0], i[1])
+            # circle center
+            cv2.circle(originalImage, center, 1, (0, 100, 100), 3)
+            # circle outline
+            radius = i[2]
+            cv2.circle(originalImage, center, radius, (255, 0, 255), 3)
+    images.append(originalImage)
+    return num_circles
 
 def watershed(originalImage):
     gammaImage = adjust_gamma(image, 1.0)
@@ -121,8 +121,7 @@ print("Number of Circles in Hough:%d," % num_hough)
 num_water = watershed(image.copy())
 print("Number of Circles in WaterShed:%d" % num_water)
 
-
 # Making grid layout
-presentationImage = auto_image_grid(images)
-cv2.imshow("Hough Image", presentationImage)
+presentation_image = auto_image_grid(images)
+cv2.imshow("Hough Image", presentation_image)
 cv2.waitKey(0)
