@@ -11,7 +11,7 @@ This guide will walk you through the steps of setting up a Python virtual enviro
 
 ## Installing Venv
     Windows: python -m venv .venv
-    MacOS: python -m venv .venv
+    MacOS: python3 -m venv .venv
 
 ## Activating Virtual Environment
     Windows: .venv\Scripts\Activate
