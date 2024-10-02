@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import argparse
 import math
+from matplotlib import pyplot as plt
 
 def getImage():
     ap = argparse.ArgumentParser()
@@ -153,3 +154,42 @@ def non_max_suppression_fast(boxes, overlapThresh):
 
     # Return only the bounding boxes that were picked
     return boxes[pick].astype("int")
+
+def create_border(originalImage, templateImage):
+
+    original_height, original_width = originalImage.shape[::-1]
+    template_height, template_width = templateImage.shape[::-1]
+
+    top_border = max(0, (template_height - original_height) // 2)
+    bottom_border = max(0, template_height - original_height - top_border)
+    left_border = max(0, (template_width - original_width) // 2)
+    right_border = max(0, template_width - original_width - left_border)
+
+    bordered_image = cv2.copyMakeBorder(
+        originalImage,
+        top_border,
+        bottom_border,
+        left_border,
+        right_border,
+        borderType=cv2.BORDER_CONSTANT,
+        # Remember this is in BGR format for blak
+        value=[0, 0, 0]  
+    )
+    
+    return bordered_image
+
+def display_image(image, title="Image"):
+    """
+    Displays an image using matplotlib in a Jupyter Notebook.
+
+    :param image: The image to display (numpy array).
+    :param title: Title for the displayed image.
+    """
+    # Convert BGR (OpenCV format) to RGB (matplotlib format)
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
+    # Display the image
+    plt.imshow(image_rgb)
+    plt.title(title)
+    plt.axis('off')  # Turn off axis numbers and ticks
+    plt.show()
