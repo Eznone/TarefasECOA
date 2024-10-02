@@ -157,26 +157,40 @@ def non_max_suppression_fast(boxes, overlapThresh):
 
 def create_border(originalImage, templateImage):
 
-    original_height, original_width = originalImage.shape[::-1]
-    template_height, template_width = templateImage.shape[::-1]
+    original_height, original_width = originalImage.shape[:2]
+    template_height, template_width = templateImage.shape[:2]
 
-    top_border = max(0, (template_height - original_height) // 2)
-    bottom_border = max(0, template_height - original_height - top_border)
-    left_border = max(0, (template_width - original_width) // 2)
-    right_border = max(0, template_width - original_width - left_border)
+    vertical_border = max(0, (template_height) // 2)
+    horizontal_border = max(0, (template_width - 1) // 2)
 
     bordered_image = cv2.copyMakeBorder(
         originalImage,
-        top_border,
-        bottom_border,
-        left_border,
-        right_border,
+        vertical_border,
+        vertical_border,
+        horizontal_border,
+        horizontal_border,
         borderType=cv2.BORDER_CONSTANT,
         # Remember this is in BGR format for blak
         value=[0, 0, 0]  
     )
-    
     return bordered_image
+
+def remove_border(bordered_image, originalImage, templateImage):
+
+    original_height, original_width = originalImage.shape[::-1]
+    template_height, template_width = templateImage.shape[::-1]
+
+    vertical_border = max(0, (template_height) // 2)
+    print(vertical_border)
+    horizontal_border = max(0, (template_width) // 2)
+    print(horizontal_border)
+
+    cropped_image = bordered_image[
+        vertical_border:bordered_image.shape[0] - vertical_border,
+        horizontal_border:bordered_image.shape[1] - horizontal_border
+    ]
+    
+    return cropped_image
 
 def display_image(image, title="Image"):
     """
