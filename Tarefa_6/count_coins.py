@@ -9,7 +9,7 @@ from processes import *
 images = []
 kernel = np.ones((5,5),np.uint8)
 coinComp = cv2.imread("../images/coinComp4.png")
-image = getImage()
+image = getTerminalImage()
 
 # Functions -----------------------------------------------------------------
 def template_match(originalImage, coinImage):

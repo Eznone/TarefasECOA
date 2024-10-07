@@ -4,7 +4,7 @@ import argparse
 import math
 from matplotlib import pyplot as plt
 
-def getImage():
+def getTerminalImage():
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--image", required=True, help = "Path to image")
     args = vars(ap.parse_args())
@@ -82,6 +82,7 @@ def processImage(image, gamma = 1.0):
     newImage = cv2.cvtColor(newImage, cv2.COLOR_BGR2GRAY)
     newImage = cv2.GaussianBlur(newImage, (5, 5), 0)
     newImage = cv2.dilate(newImage, kernel, iterations = 1)
+    newImage = cv2.morphologyEx(newImage, cv2.MORPH_CLOSE, kernel)
     return newImage
 
 def imageComparitor(image, template, meth):
