@@ -76,14 +76,15 @@ def adjust_gamma(image, gamma = 1.0):
 	# apply gamma correction using the lookup table
 	return cv2.LUT(image, table)
 
-def processImage(image, gamma = 1.0):
+def process_image(image, gamma = 1.0):
     kernel = np.ones((5,5),np.uint8)
-    
     newImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    cv2.imshow("Threshed ballons", newImage)
+    cv2.waitKey(0)
     newImage = cv2.GaussianBlur(newImage, (5, 5), 0)
-    newImage = cv2.dilate(newImage, kernel, iterations = 1)
-    _, newImage = cv2.threshold(newImage, 120, 255, cv2.THRESH_BINARY_INV)
-    newImage = cv2.morphologyEx(newImage, cv2.MORPH_OPEN, kernel)
+    cv2.imshow("Threshed ballons", newImage)
+    cv2.waitKey(0)
+    # newImage = cv2.dilate(newImage, kernel, iterations = 1)
     return newImage
 
 def imageComparitor(image, template, meth):
@@ -193,5 +194,5 @@ def detect_circles(originalImage):
             # circle outline
             radius = i[2]
             cv2.circle(originalImage, center, radius, (255, 0, 255), 3)
-            
+
     return num_circles, originalImage
