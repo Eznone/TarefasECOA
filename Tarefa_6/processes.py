@@ -78,11 +78,12 @@ def adjust_gamma(image, gamma = 1.0):
 
 def processImage(image, gamma = 1.0):
     kernel = np.ones((5,5),np.uint8)
-    newImage = adjust_gamma(image, gamma)
-    newImage = cv2.cvtColor(newImage, cv2.COLOR_BGR2GRAY)
+    
+    newImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     newImage = cv2.GaussianBlur(newImage, (5, 5), 0)
     newImage = cv2.dilate(newImage, kernel, iterations = 1)
-    newImage = cv2.morphologyEx(newImage, cv2.MORPH_CLOSE, kernel)
+    _, newImage = cv2.threshold(newImage, 120, 255, cv2.THRESH_BINARY_INV)
+    newImage = cv2.morphologyEx(newImage, cv2.MORPH_OPEN, kernel)
     return newImage
 
 def imageComparitor(image, template, meth):
@@ -157,43 +158,6 @@ def non_max_suppression_fast(boxes, overlapThresh):
     # Return only the bounding boxes that were picked
     return boxes[pick].astype("int")
 
-def create_border(originalImage, templateImage):
-
-    original_height, original_width = originalImage.shape[:2]
-    template_height, template_width = templateImage.shape[:2]
-
-    vertical_border = max(0, (template_height) // 2)
-    horizontal_border = max(0, (template_width - 1) // 2)
-
-    bordered_image = cv2.copyMakeBorder(
-        originalImage,
-        vertical_border,
-        vertical_border,
-        horizontal_border,
-        horizontal_border,
-        borderType=cv2.BORDER_CONSTANT,
-        # Remember this is in BGR format for blak
-        value=[0, 0, 0]  
-    )
-    return bordered_image
-
-def remove_border(bordered_image, originalImage, templateImage):
-
-    original_height, original_width = originalImage.shape[::-1]
-    template_height, template_width = templateImage.shape[::-1]
-
-    vertical_border = max(0, (template_height) // 2)
-    print(vertical_border)
-    horizontal_border = max(0, (template_width) // 2)
-    print(horizontal_border)
-
-    cropped_image = bordered_image[
-        vertical_border:bordered_image.shape[0] - vertical_border,
-        horizontal_border:bordered_image.shape[1] - horizontal_border
-    ]
-    
-    return cropped_image
-
 def display_image(image, title="Image"):
     """
     Displays an image using matplotlib in a Jupyter Notebook.
@@ -209,3 +173,25 @@ def display_image(image, title="Image"):
     plt.title(title)
     plt.axis('off')  # Turn off axis numbers and ticks
     plt.show()
+
+def detect_circles(originalImage):
+    grayImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
+    grayImage = cv2.medianBlur(grayImage, 5)
+
+    rows = grayImage.shape[0]
+    circles = cv2.HoughCircles(grayImage, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30, minRadius=40, maxRadius = 80)
+    if circles is not None:
+        circles = np.uint16(np.around(circles))
+
+        # Counting the circles
+        num_circles = circles.shape[1]
+
+        for i in circles[0, :]:
+            center = (i[0], i[1])
+            # circle center
+            cv2.circle(originalImage, center, 1, (0, 100, 100), 3)
+            # circle outline
+            radius = i[2]
+            cv2.circle(originalImage, center, radius, (255, 0, 255), 3)
+            
+    return num_circles, originalImage
