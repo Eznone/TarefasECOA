@@ -3,11 +3,11 @@ import argparse
 import math
 import numpy as np
 from matplotlib import pyplot as plt
-from processes import *
+from image_operations import *
 from image_processes import *
 
 # Obtaining desired comparee image
-compareeImage = cv2.imread("../images/Tarefa_6/balloons.jpeg")
+comparee_image = cv2.imread("../images/Tarefa_6/balloons.jpeg")
 
 # Global variables --------------------------------
 kernel = np.ones((5,5),np.uint8)
@@ -21,9 +21,9 @@ def threshold_balloons(processed_image):
 
     return num_objects, newImage
 
-def hough_circle(originalImage):
+def hough_circle(original_image):
 
-    image = originalImage.copy()
+    image = original_image.copy()
     rows = image.shape[0]
     circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=30, minRadius=40, maxRadius = 100)
     if circles is not None:
@@ -35,18 +35,18 @@ def hough_circle(originalImage):
         for i in circles[0, :]:
             center = (i[0], i[1])
             # circle center
-            cv2.circle(originalImage, center, 1, (0, 100, 100), 3)
+            cv2.circle(original_image, center, 1, (0, 100, 100), 3)
             # circle outline
             radius = i[2]
-            cv2.circle(originalImage, center, radius, (255, 0, 255), 3)
+            cv2.circle(original_image, center, radius, (255, 0, 255), 3)
 
-    return num_circles, originalImage
+    return num_circles, original_image
 
 
 # Main Code ---------------------------------------
 
 # Getting a shape for the balloons
-processed_image = process_image(compareeImage)
+processed_image = process_image(comparee_image)
 #num_balloons, finished_balloons = threshold_balloons(processed_image)
 num_balloons, finished_balloons = hough_circle(processed_image)
 
