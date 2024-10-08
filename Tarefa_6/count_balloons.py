@@ -47,8 +47,8 @@ def hough_circle(originalImage):
 
 # Getting a shape for the balloons
 processed_image = process_image(compareeImage)
-#num_balloons, threshed_balloons = threshold_balloons(processed_image)
-num_balloons, hough_balloons = hough_circle(processed_image)
+#num_balloons, finished_balloons = threshold_balloons(processed_image)
+num_balloons, finished_balloons = hough_circle(processed_image)
 
-cv2.imshow("Number of Balloons: %d" % num_balloons, hough_balloons)
+cv2.imshow("Number of Balloons: %d" % num_balloons, finished_balloons)
 cv2.waitKey(0)

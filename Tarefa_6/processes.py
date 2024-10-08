@@ -112,8 +112,8 @@ def display_image(image, title="Image"):
     plt.axis('off')  # Turn off axis numbers and ticks
     plt.show()
 
-def detect_circles(originalImage):
-    grayImage = cv2.cvtColor(originalImage, cv2.COLOR_BGR2GRAY)
+def detect_circles(original_image):
+    grayImage = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
     grayImage = cv2.medianBlur(grayImage, 5)
 
     rows = grayImage.shape[0]
@@ -127,9 +127,9 @@ def detect_circles(originalImage):
         for i in circles[0, :]:
             center = (i[0], i[1])
             # circle center
-            cv2.circle(originalImage, center, 1, (0, 100, 100), 3)
+            cv2.circle(original_image, center, 1, (0, 100, 100), 3)
             # circle outline
             radius = i[2]
-            cv2.circle(originalImage, center, radius, (255, 0, 255), 3)
+            cv2.circle(original_image, center, radius, (255, 0, 255), 3)
 
-    return num_circles, originalImage
+    return num_circles, original_image
