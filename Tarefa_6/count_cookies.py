@@ -3,6 +3,7 @@ import numpy as np
 import argparse
 import math
 from processes import *
+from image_processes import *
 
 # Global variables --------------------------------------------------
 images = []

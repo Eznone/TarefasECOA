@@ -4,6 +4,7 @@ import math
 import numpy as np
 from matplotlib import pyplot as plt
 from processes import *
+from image_processes import *
 
 # Obtaining desired comparee image
 compareeImage = cv2.imread("../images/Tarefa_6/balloons.jpeg")
