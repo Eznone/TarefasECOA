@@ -20,7 +20,6 @@ def threshold_cookies(processed_image):
     return newImage
 
 def hough_circle(original_image):
-
     image = original_image.copy()
     rows = image.shape[0]
     circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, rows/8, param1=100, param2=10, minRadius=40, maxRadius = 190)

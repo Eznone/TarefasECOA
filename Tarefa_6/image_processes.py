@@ -57,10 +57,8 @@ def non_max_suppression_fast(boxes, overlapThresh):
     return boxes[pick].astype("int")
 
 def process_image(image, gamma = 1.0):
-    kernel = np.ones((5,5),np.uint8)
     newImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     newImage = cv2.GaussianBlur(newImage, (5, 5), 0)
-    # newImage = cv2.dilate(newImage, kernel, iterations = 1)
     return newImage
 
 def clean_mask(original_mask):
