@@ -26,7 +26,7 @@ def detect_coins_water_shed(frame):
     # Determining object by seemingly expanding what an object is
     sure_bg = cv2.dilate(opening, kernel, iterations=3)
 
-    #sure_bg = cv2.morphologyEx(sure_bg, cv2.MORPH_CLOSE, kernel)
+    sure_bg = cv2.morphologyEx(sure_bg, cv2.MORPH_CLOSE, kernel)
 
     # Canny detection to make edges for circle
     edges = cv2.Canny(sure_bg, 50, 150)
@@ -41,7 +41,7 @@ def detect_coins_water_shed(frame):
             # Draw a rectangle for the center of the circle
             cv2.rectangle(frame, (x - 5, y - 5), (x + 5, y + 5), (0, 128, 255), -1)
 
-    return frame, edges
+    return frame, sure_bg
 
 
     
