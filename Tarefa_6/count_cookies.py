@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import argparse
 import math
-from Tarefa_6.image_operations import *
+from image_operations import *
 from image_processes import *
 
 # Global variables --------------------------------------------------

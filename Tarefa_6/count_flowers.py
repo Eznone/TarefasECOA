@@ -3,8 +3,8 @@ import argparse
 import math
 import numpy as np
 from matplotlib import pyplot as plt
-from Tarefa_6.image_operations import *
-from Tarefa_6.image_processes import *
+from image_operations import *
+from image_processes import *
 
 # Obtaining desired comparee image ---------------------------
 comparee_image = cv2.imread("../images/Tarefa_6/flowers.jpeg")

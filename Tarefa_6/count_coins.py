@@ -14,8 +14,8 @@ kernel = np.ones((5,5),np.uint8)
 def detect_coins_hough_circles(frame, gamma=1.0):
     gamma_image = adjust_gamma(frame, gamma)
 
+    # Processing image
     gray = cv2.cvtColor(gamma_image, cv2.COLOR_BGR2GRAY)
-    
     gray = cv2.GaussianBlur(gray, (5,5), 0)
     _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
 
