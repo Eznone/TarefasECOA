@@ -27,7 +27,7 @@ while True:
         break
 
     # Detecting coins and balloons
-    coin_image, threshold_image = detect_coins(frame)
+    coin_image, threshold_image = detect_coins_hough_circles(frame)
     coin_image = cv2.resize(coin_image, (threshold_image.shape[1], threshold_image.shape[0]))
     
     #coin_image = cv2.cvtColor(coin_image, cv2.COLOR_GRAY2BGR)
